@@ -1,0 +1,116 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import dbConnect from '@/lib/mongodb';
+import Job from '@/models/Job';
+import Profile from '@/models/Profile';
+
+// Calculate match score between job and profile
+function calculateMatchScore(job, profile) {
+  let score = 0;
+  const weights = {
+    skills: 0.5,
+    location: 0.2,
+    jobType: 0.15,
+    experienceLevel: 0.15
+  };
+
+  // Match skills
+  const matchingSkills = job.skills.filter(skill => 
+    profile.skills.some(profileSkill => 
+      profileSkill.toLowerCase() === skill.toLowerCase()
+    )
+  );
+  score += (matchingSkills.length / job.skills.length) * weights.skills;
+
+  // Match location
+  if (profile.preferredLocations.some(loc => 
+    job.location.toLowerCase().includes(loc.toLowerCase())
+  )) {
+    score += weights.location;
+  }
+
+  // Match job type
+  if (profile.preferredJobTypes.includes(job.jobType)) {
+    score += weights.jobType;
+  }
+
+  // Match experience level (simplified)
+  const experienceLevels = ['entry', 'junior', 'mid', 'senior', 'lead'];
+  const profileExperience = profile.experience.length;
+  const jobLevel = experienceLevels.indexOf(job.experienceLevel);
+  const profileLevel = Math.min(Math.floor(profileExperience / 2), 4);
+  
+  score += (1 - Math.abs(jobLevel - profileLevel) / 4) * weights.experienceLevel;
+
+  return score;
+}
+
+// GET matches for a job or candidate
+export async function GET(request) {
+  try {
+    await dbConnect();
+    const { searchParams } = new URL(request.url);
+    const session = await auth();
+
+    if (!session) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const jobId = searchParams.get('jobId');
+    const candidateId = searchParams.get('candidateId');
+    
+    let matches = [];
+
+    if (jobId) {
+      // Find candidates matching a job
+      const job = await Job.findById(jobId);
+      if (!job) {
+        return NextResponse.json(
+          { message: 'Job not found' },
+          { status: 404 }
+        );
+      }
+
+      const candidates = await Profile.find({}).populate('user', 'name email');
+      matches = candidates.map(profile => ({
+        profile,
+        score: calculateMatchScore(job, profile)
+      }));
+
+    } else if (candidateId) {
+      // Find jobs matching a candidate
+      const profile = await Profile.findById(candidateId);
+      if (!profile) {
+        return NextResponse.json(
+          { message: 'Profile not found' },
+          { status: 404 }
+        );
+      }
+
+      const jobs = await Job.find({ status: 'active' }).populate('employer', 'name');
+      matches = jobs.map(job => ({
+        job,
+        score: calculateMatchScore(job, profile)
+      }));
+    }
+
+    // Sort by score and return top matches
+    matches.sort((a, b) => b.score - a.score);
+
+    return NextResponse.json({
+      matches: matches.slice(0, 10), // Return top 10 matches
+      total: matches.length
+    });
+
+  } catch (error) {
+    console.error('Matching error:', error);
+    return NextResponse.json(
+      { message: error.message || 'Error finding matches' },
+      { status: 500 }
+    );
+  }
+}
+
