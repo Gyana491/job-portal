@@ -8,18 +8,19 @@ import { isValidObjectId } from 'mongoose';
 export async function GET(request, { params }) {
   try {
     await dbConnect();
-    const session = await auth();
+    
+    // Await params before accessing properties
+    const { id } = await params;
     
     // Get and validate the ID
-    const jobId = params?.id;
-    if (!jobId || !isValidObjectId(jobId)) {
+    if (!id || !isValidObjectId(id)) {
       return NextResponse.json(
         { message: 'Invalid job ID format' },
         { status: 400 }
       );
     }
     
-    const job = await Job.findById(jobId).populate('employer', 'name email');
+    const job = await Job.findById(id).populate('employer', '_id name email');
     
     if (!job) {
       return NextResponse.json(
@@ -44,9 +45,11 @@ export async function PUT(request, { params }) {
     await dbConnect();
     const session = await auth();
     
+    // Await params before accessing properties
+    const { id } = await params;
+    
     // Get and validate the ID
-    const jobId = params?.id;
-    if (!jobId || !isValidObjectId(jobId)) {
+    if (!id || !isValidObjectId(id)) {
       return NextResponse.json(
         { message: 'Invalid job ID format' },
         { status: 400 }
@@ -60,7 +63,7 @@ export async function PUT(request, { params }) {
       );
     }
     
-    const job = await Job.findById(jobId);
+    const job = await Job.findById(id);
     if (!job) {
       return NextResponse.json(
         { message: 'Job not found' },
@@ -78,7 +81,7 @@ export async function PUT(request, { params }) {
     
     const updates = await request.json();
     const updatedJob = await Job.findByIdAndUpdate(
-      jobId,
+      id,
       { ...updates, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
@@ -99,9 +102,11 @@ export async function DELETE(request, { params }) {
     await dbConnect();
     const session = await auth();
     
+    // Await params before accessing properties
+    const { id } = await params;
+    
     // Get and validate the ID
-    const jobId = params?.id;
-    if (!jobId || !isValidObjectId(jobId)) {
+    if (!id || !isValidObjectId(id)) {
       return NextResponse.json(
         { message: 'Invalid job ID format' },
         { status: 400 }
@@ -115,7 +120,7 @@ export async function DELETE(request, { params }) {
       );
     }
     
-    const job = await Job.findById(jobId);
+    const job = await Job.findById(id);
     if (!job) {
       return NextResponse.json(
         { message: 'Job not found' },
@@ -131,7 +136,7 @@ export async function DELETE(request, { params }) {
       );
     }
     
-    await Job.findByIdAndDelete(jobId);
+    await Job.findByIdAndDelete(id);
     
     return NextResponse.json(
       { message: 'Job deleted successfully' },

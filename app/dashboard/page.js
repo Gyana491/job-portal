@@ -59,12 +59,7 @@ export default function Dashboard() {
       link: "/jobs/my-listings",
       linkText: "View Jobs"
     },
-    {
-      title: "Find Candidates",
-      description: "Search and browse qualified candidates",
-      link: "/candidates/search",
-      linkText: "Find Candidates"
-    }
+    
   ];
 
   const candidateCards = [
