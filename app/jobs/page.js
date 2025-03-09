@@ -73,7 +73,7 @@ export default function Jobs() {
           {session?.user.role === 'employer' && (
             <Link
               href="/jobs/create"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto text-center"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full sm:w-auto text-center transition-colors"
             >
               Post New Job
             </Link>
@@ -159,14 +159,14 @@ export default function Jobs() {
                 <div className="flex gap-2">
                   <Link
                     href={`/jobs/${job._id}`}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto text-center"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full sm:w-auto text-center transition-colors"
                   >
                     View Details
                   </Link>
                   {session?.user.role === 'employer' && session.user.id === job.employer && (
                     <Link
                       href={`/jobs/${job._id}/edit`}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full sm:w-auto text-center"
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full sm:w-auto text-center transition-colors"
                     >
                       Edit
                     </Link>

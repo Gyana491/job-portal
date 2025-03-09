@@ -23,7 +23,8 @@ export default function CreateJob() {
       currency: 'USD'
     },
     benefits: [],
-    experienceLevel: 'entry'
+    experienceLevel: 'entry',
+    applyLink: '',
   });
 
   const handleSubmit = async (e) => {
@@ -189,12 +190,27 @@ export default function CreateJob() {
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="block mb-2">Application Link</label>
+                <input
+                  type="url"
+                  value={jobData.applyLink}
+                  onChange={(e) => setJobData(prev => ({ ...prev, applyLink: e.target.value }))}
+                  placeholder="https://example.com/apply"
+                  className="w-full p-2 border rounded"
+                  required
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Direct link where candidates can apply for this position
+                </p>
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
           >
             Post Job
           </button>

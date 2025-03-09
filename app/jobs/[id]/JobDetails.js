@@ -29,6 +29,21 @@ export default function JobDetails({ id }) {
     fetchJobDetails();
   }, [fetchJobDetails]);
 
+  // Add a helper function to format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const handleApply = () => {
+    if (job.applyLink) {
+      window.open(job.applyLink, '_blank');
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -38,64 +53,122 @@ export default function JobDetails({ id }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <Link
+            href="/jobs"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5 mr-2" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" 
+                clipRule="evenodd" 
+              />
+            </svg>
+            Back to Jobs
+          </Link>
+        </div>
+
+        <div className="bg-card p-6 rounded-lg shadow">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
-              <p className="text-xl text-gray-600 mb-4">{job.company}</p>
-              <div className="flex gap-4 mb-6">
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  {job.jobType.replace('_', ' ')}
-                </span>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                  {job.workType}
-                </span>
-                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-                  {job.location}
-                </span>
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-4">{job.title}</h1>
+              <p className="text-muted-foreground">{job.company}</p>
             </div>
-            {session?.user.id === job.employer && (
-              <Link
-                href={`/jobs/${job._id}/edit`}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            
+            {/* Add Apply Button */}
+            {session?.user?.role === 'candidate' && (
+              <button
+                onClick={handleApply}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
               >
-                Edit Job
-              </Link>
+                Apply Now
+              </button>
             )}
           </div>
 
-          <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold mb-3">Description</h2>
-            <p className="text-gray-700 mb-6 whitespace-pre-wrap">{job.description}</p>
+          {/* Job Metadata */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+              {job.jobType.replace('_', ' ')}
+            </span>
+            <span className="bg-secondary/10 text-secondary-foreground px-3 py-1 rounded-full text-sm">
+              {job.workType}
+            </span>
+            <span className="bg-accent/10 text-accent-foreground px-3 py-1 rounded-full text-sm">
+              {job.location}
+            </span>
+            {job.salary && (
+              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                {formatCurrency(job.salary.min)} - {formatCurrency(job.salary.max)}
+              </span>
+            )}
+          </div>
 
-            <h2 className="text-xl font-semibold mb-3">Requirements</h2>
-            <p className="text-gray-700 mb-6 whitespace-pre-wrap">{job.requirements}</p>
+          {/* Job Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div>
+              <div className="prose max-w-none">
+                <h2 className="text-xl font-semibold mb-3">Description</h2>
+                <p className="text-gray-700 mb-6 whitespace-pre-wrap">{job.description}</p>
 
-            <div className="mt-8 pt-6 border-t">
-              <h2 className="text-xl font-semibold mb-4">Additional Details</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-600">Salary Range</p>
-                  <p className="font-medium">{job.salaryRange}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Experience Level</p>
-                  <p className="font-medium">{job.experienceLevel}</p>
+                <h2 className="text-xl font-semibold mb-3">Requirements</h2>
+                <ul className="list-disc pl-5 text-gray-700 mb-6">
+                  {job.requirements?.map((req, i) => (
+                    <li key={i} className="mb-2">{req}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div>
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h2 className="text-xl font-semibold mb-4">Additional Details</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-gray-600">Experience Level</p>
+                    <p className="font-medium capitalize">{job.experienceLevel}</p>
+                  </div>
+                  
+                  {job.benefits?.length > 0 && (
+                    <div>
+                      <p className="text-gray-600">Benefits</p>
+                      <ul className="list-disc pl-5">
+                        {job.benefits.map((benefit, i) => (
+                          <li key={i} className="text-gray-700">{benefit}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {job.applicationDeadline && (
+                    <div>
+                      <p className="text-gray-600">Application Deadline</p>
+                      <p className="font-medium">
+                        {new Date(job.applicationDeadline).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="text-gray-600">Posted On</p>
+                    <p className="font-medium">
+                      {new Date(job.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t">
-            <Link
-              href="/jobs"
-              className="text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              ← Back to Jobs
-            </Link>
           </div>
         </div>
       </div>

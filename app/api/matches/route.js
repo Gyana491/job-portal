@@ -3,47 +3,7 @@ import { auth } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Job from '@/models/Job';
 import Profile from '@/models/Profile';
-
-// Calculate match score between job and profile
-function calculateMatchScore(job, profile) {
-  let score = 0;
-  const weights = {
-    skills: 0.5,
-    location: 0.2,
-    jobType: 0.15,
-    experienceLevel: 0.15
-  };
-
-  // Match skills
-  const matchingSkills = job.skills.filter(skill => 
-    profile.skills.some(profileSkill => 
-      profileSkill.toLowerCase() === skill.toLowerCase()
-    )
-  );
-  score += (matchingSkills.length / job.skills.length) * weights.skills;
-
-  // Match location
-  if (profile.preferredLocations.some(loc => 
-    job.location.toLowerCase().includes(loc.toLowerCase())
-  )) {
-    score += weights.location;
-  }
-
-  // Match job type
-  if (profile.preferredJobTypes.includes(job.jobType)) {
-    score += weights.jobType;
-  }
-
-  // Match experience level (simplified)
-  const experienceLevels = ['entry', 'junior', 'mid', 'senior', 'lead'];
-  const profileExperience = profile.experience.length;
-  const jobLevel = experienceLevels.indexOf(job.experienceLevel);
-  const profileLevel = Math.min(Math.floor(profileExperience / 2), 4);
-  
-  score += (1 - Math.abs(jobLevel - profileLevel) / 4) * weights.experienceLevel;
-
-  return score;
-}
+import { calculateMatchScore } from '@/lib/matching';
 
 // GET matches for a job or candidate
 export async function GET(request) {

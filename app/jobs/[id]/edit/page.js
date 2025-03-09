@@ -26,7 +26,8 @@ export default function EditJob() {
       currency: 'USD'
     },
     benefits: [],
-    experienceLevel: 'entry'
+    experienceLevel: 'entry',
+    applyLink: '',
   });
 
   const fetchJobDetails = useCallback(async () => {
@@ -262,6 +263,22 @@ export default function EditJob() {
                   <option value="lead">Lead</option>
                 </select>
               </div>
+
+              <div>
+                <label className="block mb-2">Application Link</label>
+                <input
+                  type="url"
+                  value={job.applyLink}
+                  onChange={handleChange}
+                  name="applyLink"
+                  placeholder="https://example.com/apply"
+                  className="w-full p-2 border rounded"
+                  required
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Direct link where candidates can apply for this position
+                </p>
+              </div>
             </div>
           </div>
 
@@ -276,7 +293,7 @@ export default function EditJob() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors disabled:opacity-50"
             >
               {submitting ? 'Updating...' : 'Update Job'}
             </button>
